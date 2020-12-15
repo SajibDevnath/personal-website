@@ -6,7 +6,7 @@ tags = []
 title = "Contact"
 
 +++
-
+```css
 <style>
 body {font-family: Arial, Helvetica, sans-serif;}
 * {box-sizing: border-box;}
@@ -42,7 +42,8 @@ input[type=submit]:hover {
   padding: 20px;
 }
 </style>
-
+```
+````html
 <div class="new-form">
   <form name="contact" method="POST" data-netlify="true" action="/thank-you/">
     <label for="fname">Name</label><br>
@@ -57,3 +58,4 @@ input[type=submit]:hover {
     <input type="submit" value="Submit">
   </form>
 </div>
+````
