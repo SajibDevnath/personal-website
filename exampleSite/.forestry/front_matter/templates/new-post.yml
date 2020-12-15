@@ -20,4 +20,5 @@ fields:
     maxSize: 64
   label: image
 pages:
+- exampleSite/content/contact.md
 - exampleSite/content/posts/visualizing-cricket-world-cup-2019-boundaries.md
