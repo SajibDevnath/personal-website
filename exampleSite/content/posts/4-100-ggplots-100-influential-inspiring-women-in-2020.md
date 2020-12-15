@@ -6,8 +6,8 @@ tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#4 100-ggplots 100 Influential & Inspiring Women in 2020"
 
 +++
-
 Libraries:
+
 ```r
 library(tidyverse)
 library(countrycode)
@@ -17,6 +17,7 @@ library(ggimage)
 ```
 
 Fonts:
+
 ```r
 font_add_google("Abril Fatface", "abril")
 font_add_google("Roboto", "roboto slab")
@@ -24,19 +25,23 @@ showtext_auto()
 ```
 
 Loading the data:
+
 ```r
 tt <- tidytuesdayR::tt_load('2020-12-08')
 women <- tt$women
 ```
 
 ## Preparing the data:
+
 Add index number to the data.frame:
+
 ```r
 data <- women %>% 
   mutate(index = row_number())
 ```
 
 Add continent to dataset:
+
 ```r
 continents <- data %>% 
   mutate(continent = countrycode(country, "country.name", "continent")) %>% 
@@ -51,6 +56,7 @@ continents <- data %>%
 ```
 
 Adding category numbers:
+
 ```r
 cat_num <- continents %>% 
   mutate(cnum = case_when(
@@ -81,7 +87,6 @@ with_imgs <- cat_num %>%
   )) %>% 
   add_count(category)
 ```
-
 
 ## Visualization:
 
@@ -127,10 +132,9 @@ p1 +
     legend.key.size = unit(0.5, "cm"),
     legend.position = c(0.70, 0.90)
   )
-
 ```
 
-![](/uploads/4-1.png)
+![](/uploads/4.png)
 
 ```r
 ggsave(plot = last_plot(),
@@ -138,6 +142,5 @@ ggsave(plot = last_plot(),
        dpi = 300,
        height = 10, width = 10)
 ```
-
 
 Original: [Eliane Mitchell](https://github.com/elianemitchell/mytidytuesdaycode/blob/main/bbcwomen2020_week50_2020.R)
