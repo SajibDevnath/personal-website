@@ -1,7 +1,6 @@
 +++
 date = 2020-12-13T18:00:00Z
 description = "The most frequent features in the sixty-eight five star Washington trails"
-draft = true
 image = "/uploads/5.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#5 100-ggplots Washington Trails 2"
