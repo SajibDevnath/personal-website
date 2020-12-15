@@ -1,20 +1,19 @@
 baseURL = "http://example.org/"
 languageCode = "en-us"
-title = "Ink"
+title = "Sajib Devnath"
 theme = "ink"
-paginate = 5
+paginate = 6
 
-copyright = "© Copyright notice"
+copyright = "© 2020"
 
 pygmentsstyle = "vs"
 pygmentscodefences = true
 pygmentscodefencesguesssyntax = true
 
-googleAnalytics = "UA-123-45"
-disqusShortname = "ink-demo"
+googleAnalytics = "UA-130238800-1"
 
 [params]
-	subtitle = "Crisp, minimal personal [blog theme for Hugo](https://github.com/knadh/hugo-ink)"
+	subtitle = "Help me [buy me a new laptop](https://www.buymeacoffee.com/Sajibdevnath)"
 
 	# Optional 64x64 avatar image.
 	avatar = "https://image.freepik.com/free-vector/young-man-head-with-beard-avatar-character_24877-36786.jpg"
@@ -28,6 +27,7 @@ disqusShortname = "ink-demo"
 	# customCSS = "css/custom.css"  # Custom CSS applied to default styles.
 	# customDarkCSS = "css/custom-dark.css"  # Custom styles applied to dark mode css.
 	# customJS = ["js/custom.js", "js/custom1.js"]  # Custom JS scripts.
+
 
 # Nav.
 [[menu.main]]
@@ -53,12 +53,12 @@ weight = 4
 [[params.social]]
 name = "Github"
 icon = "github"
-url = "https://github.com/knadh/hugo-ink"
+url = "https://github.com/SajibDevnath"
 
 [[params.social]]
-name = "RSS"
-icon = "rss"
-url = "/index.xml"
+name = "Twitter"
+icon = "twitter"
+url = "https://www.twitter.com/SajibDevnath_"
 
 [taxonomies]
    tag = "tags"
