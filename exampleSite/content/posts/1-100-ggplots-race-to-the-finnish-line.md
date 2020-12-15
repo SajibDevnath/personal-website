@@ -7,6 +7,7 @@ title = "#2 100-ggplots  Race to the Finnish Line"
 
 +++
 ## Data Manipulation:
+
 ```r
 library(tidyverse)
 library(showtext)
@@ -78,4 +79,4 @@ ggplot(plot_data, aes(x = year, y = subs)) +
   
 ```
 
-![](/uploads/2-1.png)
+![](/uploads/2.png)
