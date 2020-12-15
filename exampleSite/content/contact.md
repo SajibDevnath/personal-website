@@ -6,7 +6,7 @@ tags = []
 title = "Contact"
 
 +++
-```css
+
 <style>
     body {font-family: Arial, Helvetica, sans-serif;}
     * {box-sizing: border-box;}
@@ -42,9 +42,7 @@ title = "Contact"
       padding: 20px;
     }
     </style>
-```
 
-```html
     <div class="new-form">
       <form name="contact" method="POST" data-netlify="true" action="/thank-you/">
         <label for="fname">Name</label><br>
@@ -59,6 +57,3 @@ title = "Contact"
         <input type="submit" value="Submit">
       </form>
     </div>
-```
-
-
