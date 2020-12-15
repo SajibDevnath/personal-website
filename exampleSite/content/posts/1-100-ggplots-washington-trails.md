@@ -174,8 +174,6 @@ plot <- ggplot(summary_stats) +
 ```
 ![](/uploads/1.png)
 
-[Original:](https://github.com/toebR/Tidy-Tuesday/tree/master/hiking) 
-
 
 Saving the plot:
 ```r
@@ -188,6 +186,9 @@ ggsave(
   dpi = 300
 )
 ```
+
+Original: [Tobias Stalder](https://github.com/toebR/Tidy-Tuesday/tree/master/hiking) 
+
 
 ## Thinks I learned:
 1. `str_wrap()` function - set the width of the text
