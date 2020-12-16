@@ -1,146 +1,94 @@
 +++
-date = 2020-12-13T18:00:00Z
-description = "The most frequent features in the sixty-eight five star Washington trails"
-draft = true
+date = 2020-12-16T06:00:00Z
+description = "Every member of every expedition (failed or not) to the mount Everest, by Oxygen used or not"
 image = "/uploads/5.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#6 100-ggplots Oxygen usage on Everest"
 
 +++
-Libraries:
+Library:
 
 ```r
+  
+library(ggplot2)
 library(tidyverse)
-library(countrycode)
-library(png)
+library(ggtext)
+library(forcats)
+library(extrafont)
 library(showtext)
-library(ggimage)
 ```
 
 Fonts:
 
 ```r
-font_add_google("Abril Fatface", "abril")
-font_add_google("Roboto", "roboto slab")
+font_add_google(name = "PT Serif", family = "pt")
+font_add_google(name = "Marvel", family = "marvel")
 showtext_auto()
 ```
 
-Loading the data:
+Data:
 
 ```r
-tt <- tidytuesdayR::tt_load('2020-12-08')
-women <- tt$women
+members <- data.table::fread('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv')
 ```
 
 ## Preparing the data:
 
-Add index number to the data.frame:
-
 ```r
-data <- women %>% 
-  mutate(index = row_number())
-```
+members %>% 
+  filter(peak_name == "Everest") %>% 
+  group_by(sex, season, solo, died, year, oxygen_used) %>% 
+  summarise(nums = n()) -> dfo
 
-Add continent to dataset:
-
-```r
-continents <- data %>% 
-  mutate(continent = countrycode(country, "country.name", "continent")) %>% 
-  # adding missing continents
-  mutate(continent = case_when(
-    country == "Worldwide" ~ "Worldwide",
-    country == "Exiled Uighur from Ghulja (in Chinese, Yining)" ~ "Asia",
-    country == "Northern Ireland" ~ "Europe",
-    country == "Wales, UK" ~ "Europe",
-    TRUE ~ continent
-  ))
-```
-
-Adding category numbers:
-
-```r
-cat_num <- continents %>% 
-  mutate(cnum = case_when(
-    category == "Leadership" ~ 1,
-    category == "Knowledge" ~ 2,
-    category == "Identity" ~ 3,
-    category == "Creativity" ~ 4,
-    TRUE ~ 5
-  )) 
-```
-
-```r
-imgs <- c(
-  here::here("img", 4, "1.png"),
-  here::here("img", 4, "2.png"),
-  here::here("img", 4, "3.png"),
-  here::here("img", 4, "4.png"),
-  here::here("img", 4, "5.png")
-)
-
-with_imgs <- cat_num %>% 
-  mutate(imgs = case_when(
-    category == "Leadership" ~ imgs[cnum],
-    category == "Knowledge" ~ imgs[cnum],
-    category == "Identity" ~ imgs[cnum],
-    category == "Creativity" ~ imgs[cnum],
-    TRUE ~ imgs[cnum]
-  )) %>% 
-  add_count(category)
+dfo$oxygen_used <- fct_rev(as.factor(dfo$oxygen_used))
+  
 ```
 
 ## Visualization:
 
 ```r
-colors <- c("#ffa600", "#ff6e54", "#dd5182", "#955196", "#444e86", "#003f5c")
 
-p1 <- with_imgs %>% 
-  ggplot(aes(x = cnum, y = 1, fill = continent, width = .5)) +
-  geom_bar(stat = "identity", color = "papayawhip", size = 1.1) + 
-  geom_image(aes(
-    image = imgs,
-    y = n + 2
-  ),
-  size = .09) +
-  scale_fill_manual(values = colors) +
-  xlim(0.75, 5.25) +
-  ylim(0, 37) +
+ggplot(dfo, aes(x = year, y = nums, fill = oxygen_used)) + 
+  geom_bar(stat = "identity", alpha = 0.8, width = .8) + 
+  xlim(1924, 2019) +
+  scale_fill_manual(values = c("#393b44", "white"), labels = c("YES", "NO")) +
+  scale_y_continuous(position = "right", expand = c(0, 0)) + 
+  theme_minimal() + 
+  labs(title = "Everest, give me air!",
+       subtitle = "Every member of every expedition (failed or not) \nto the mount Everest, by Oxygen used or not",
+       x = "",
+       y = "members",
+       fill = "Oxygen?",
+       caption = "Data from The Himalayan Database | @LauraNavarroSol") +
   theme(
-    aspect.ratio = 1,
-    panel.background = element_rect(fill = "papayawhip"),
-    plot.background = element_rect("papayawhip")
-  )
+    plot.background = element_rect(fill = "#80bdab", color = NA),
+    legend.position = "bottom",
+    panel.grid = element_blank(),
+    text = element_text(family = "marvel", size = 10, face = "bold"),
+    plot.title = element_text(color = "white", size = 35, family = "pt", hjust = 0.11, vjust = -0.25),
+        plot.subtitle = element_text(color = "white", size = 12, hjust = 0.04, vjust = -0.30),
+        axis.text = element_text(size = 8, color = "white"),
+        axis.title.y = element_text(size = 8, color = "white", hjust = 0),
+        plot.caption = element_text(size = 8, color = "white"),
+        legend.key.size = unit(0.4, "cm"),
+        legend.title = element_text(size = 10),) + 
+        annotate(
+    geom = "curve", x = 1947, y = 275, xend = 1951, yend = 55, 
+    curvature = .3, arrow = arrow(length = unit(2, "mm")), color = "#393b44"
+  ) +
+  annotate(geom = "text", x = 1925, y = 355, 
+           label = "Tom Bourdillon and Charles Evans \nused closed-circuit oxygen apparatus", 
+           hjust = "left", color = "#393b44", size = 3.5)
+
+ggsave(
+  filename = here::here("output", "6.pdf"),
+  plot = last_plot(),
+  width = 6,
+  height = 6,
+  dpi = 300
+)
+
+  
 ```
 
-
-```{r plot, fig.width=10,fig.height=10, fig.path="output", dev='png', fig.showtext=TRUE, eval=FALSE}
-
-p1 + 
-  labs(title = "100 Influential & Inspiring Women in 2020",
-       subtitle = "This year, BBC News honored 100 women leaders, intellectuals, activists, and creatives.\nThey left a space, called Unsung Hero, to recognize the unsung heroines worldwide.",
-       caption = "Created by @eliane_mitchll | Source: BBC News | #TidyTuesday Week 50 | See Github for Icons") +
-  theme(
-    axis.title = element_blank(),
-    axis.text.x = element_blank(),
-    axis.ticks.x = element_blank(),
-    text = element_text(family = "roboto slab", size = 15),
-    plot.title = element_text(family = "abril", size = 25, hjust = 0),
-    plot.subtitle = element_text(size = 12, hjust = 0),
-    plot.caption = element_text(size = 8, hjust = 1),
-    plot.margin = margin(25,25,25,25),
-    legend.direction = "horizontal",
-    legend.background = element_rect(fill = "papayawhip"),
-    legend.title = element_blank(),
-    legend.key.size = unit(0.5, "cm"),
-    legend.position = c(0.70, 0.90)
-  )
-```
-![](/uploads/5.png) 
-
-```r
-ggsave(plot = last_plot(),
-       filename = here::here("output", "4.pdf"),
-       dpi = 300,
-       height = 10, width = 10)
-```
-
+![](/uploads/6.png)
