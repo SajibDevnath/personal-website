@@ -1,5 +1,5 @@
 +++
-date = 2020-12-16T06:00:00Z
+date = 2020-12-24T06:00:00Z
 description = "How much currencies were under-or over-value relative to the US dollar, %, from 2010 to 2020."
 image = "/uploads/8.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
