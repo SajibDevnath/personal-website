@@ -1,8 +1,7 @@
 +++
 date = 2020-12-16T06:00:00Z
-description = "Every member of every expedition (failed or not) to the mount Everest, by Oxygen used or not"
-draft = true
-image = "/uploads/5.png"
+description = "How much currencies were under-or over-value relative to the US dollar, %, from 2010 to 2020."
+image = "/uploads/8.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#8 100-ggplots Slope Chart - Big Mac Index"
 
@@ -92,4 +91,4 @@ ggsave(
   
 ```
 
-![](/uploads/6.png)
+![](/uploads/8.png)
