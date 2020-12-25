@@ -115,3 +115,5 @@ ggsave(here::here("output", "10.png"), plot = plotx, width = 10, height = 6, typ
 
   
 ![](/uploads/10.png)
+
+From: [Jake Davison](https://github.com/jack-davison/TidyTuesday/blob/master/R/2020_07_14_Astronauts.R)
