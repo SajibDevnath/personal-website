@@ -6,7 +6,7 @@ tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#9 100-ggplots Bump Chart - Dog Breed Popularity"
 
 +++
-## Tutorial:
+### Tutorial:
 
 ```r
 df <- tibble(country = c("India", "India", "India", "Sweden", "Sweden", "Sweden", "Germany", "Germany", "Germany", "Finland", "Finland", "Finland"),
@@ -51,7 +51,8 @@ ggplot(df, aes(year, rank, color = country)) +
 ggsave(here::here("output", "9-1.png"), plot = plox, width = 8, height = 4, type="cairo")
 ```
 ![](/uploads/9-1.png)
-\##2: Dog breed popularity bump chart
+
+### 2: Dog breed popularity bump chart
 
 ```r
 dogranks <-
