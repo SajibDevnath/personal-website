@@ -1,6 +1,6 @@
 +++
 date = 2020-12-24T06:00:00Z
-description = "How much currencies were under-or over-value relative to the US dollar, %, from 2010 to 2020."
+description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
 image = "/uploads/9-2.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#8 100-ggplots Bump Chart - Dog Breed Popularity"
