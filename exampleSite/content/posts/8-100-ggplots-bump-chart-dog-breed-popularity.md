@@ -1,96 +1,137 @@
 +++
 date = 2020-12-24T06:00:00Z
 description = "How much currencies were under-or over-value relative to the US dollar, %, from 2010 to 2020."
-draft = true
-image = "/uploads/8.png"
+image = "/uploads/9-2.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#8 100-ggplots Bump Chart - Dog Breed Popularity"
 
 +++
-Libraries:
+## Tutorial:
+
 ```r
-library(tidyverse)
-library(lubridate)
+df <- tibble(country = c("India", "India", "India", "Sweden", "Sweden", "Sweden", "Germany", "Germany", "Germany", "Finland", "Finland", "Finland"),
+             year = c(2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013),
+             value = c(492, 246, 246, 369, 123, 492, 246, 369, 123, 123, 492, 369))
+
+knitr::kable(head(df))
+```
+
+```r
+df <- df %>% 
+  group_by(year) %>% 
+  mutate(rank = rank(value, ties.method = "random")) %>% 
+  ungroup()
+```
+
+```{r, fig.width=8, fig.height=4}
+ggplot(df, aes(year, rank, color = country)) +
+  geom_bump(size = 2, smooth = 8) +
+  geom_point(size = 3) +
+  geom_text(
+    data = df %>% filter(year == min(year)),
+    aes(x = year - .1, label = country),
+    size = 5,
+    hjust = 1
+  ) + 
+  geom_text(
+    data = df %>% filter(year == max(year)),
+    aes(x = year + .1, label = country),
+    size = 5,
+    hjust = 0
+  ) +
+  scale_x_continuous(breaks = 2011:2013, limits = c(2010.6, 2013.4)) +
+  scale_color_manual(values = wes_palette(n = 4, name = "GrandBudapest1")) +
+  ggthemes::theme_solid() +
+  theme(
+    legend.position = "none"
+  ) -> plox
+```
+
+```r
+ggsave(here::here("output", "9-1.png"), plot = plox, width = 8, height = 4, type="cairo")
+```
+![](/uploads/9-1.png)
+\##2: Dog breed popularity bump chart
+
+```r
+dogranks <-
+  tibble(
+    Breed = c(
+      "Retrievers (Labrador)", "German Shepherd Dogs",
+      "Retrievers (Golden)", "French Bulldogs", "Bulldogs",
+      "Beagles", "Poodles", "Rottweilers", "Yorkshire Terriers",
+      "Pointers (German Shorthaired)", "Pembroke Welsh Corgis"
+    ),
+    r2019 = c(1L, 2L, 3L, 4L, 5L, 7L, 6L, 8L, 12L, 9L, 10L),
+    r2018 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 10L, 9L, 13L),
+    r2017 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 15L),
+    r2016 = c(1L, 2L, 3L, 6L, 4L, 5L, 7L, 8L, 9L, 11L, 18L),
+    r2015 = c(1L, 2L, 3L, 6L, 4L, 5L, 8L, 9L, 7L, 11L, 20L),
+    r2014 = c(1L, 2L, 3L, 9L, 4L, 5L, 7L, 10L, 6L, 12L, 22L),
+    r2013 = c(1L, 2L, 3L, 11L, 5L, 4L, 8L, 9L, 6L, 13L, 24L)
+  )
+
+knitr::kable(dogranks)
+```
+
+```r
+dogs_long <- dogranks %>%
+  pivot_longer(
+    cols = r2019:r2013,
+    names_to = "year", values_to = "rank"
+  ) %>%
+  mutate(year = readr::parse_number(year))
+
+knitr::kable(dogs_long)
+```
+
+```r
 library(showtext)
-library(ggthemes)
-theme_set(theme_tufte())
-```
-
-```r
-big_mac <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-12-22/big-mac.csv')
-```
-
-```r
-countries <- c("Argentina", "Switzerland", "Canada", "United States", "South Africa", "South Korea", "Thailand", "Euro area","China")
-
-big_mac %>% 
-  mutate(dollar_price = round(dollar_price, 2)) %>% 
-  filter(name %in% countries, date == as.Date("2010-07-01") | date == as.Date("2020-07-01")) %>% 
-  mutate(year = year(date)) %>% 
-  select(year, name, dollar_price) %>% 
-  mutate(raw_index = if_else(
-    year == 2010, ((dollar_price * 100) / 3.73) - 100, ((dollar_price * 100) / 5.71) - 100
-  )) %>% 
-  select(-dollar_price) %>% 
-  pivot_wider(names_from = year, values_from = raw_index) %>% 
-  janitor::clean_names() -> big_mac2
-  
-```
-
-```r
-right_label <- paste(big_mac2$name, round(big_mac2$x2020, 2), sep =", ")
-left_label <- paste(big_mac2$name, round(big_mac2$x2010, 2), sep =", ")
-plot_colors <- c("#B0413E", "#02C3BD", "#F49E4C", "#697A21", "#8C429E", "#AE6F8F", "#5C52CB", "#08A045", "#0000E0")
-```
-
-```r
-font_add_google(name = "IBM Plex Sans", family = "plex")
+font_add_google(name = "IBM Plex Sans", family = "Arial")
 showtext_auto()
 ```
 
-```r
-plot <- ggplot(big_mac2) +
-  geom_segment(aes(
-    x = 1,
-    y = x2010,
-    xend = 2,
-    yend = x2020
-  ), color = plot_colors, size = 1, lineend = "round") +
-  geom_text(label = left_label, aes(y = x2010, x = 1), hjust = 1.1, size = 4, family = "plex") +
-  geom_text(label = right_label, aes(y = x2020, x = 2), hjust = -0.1, size = 4, family = "plex") +
-  geom_text(label = "2010", aes(y = 80, x = 1), hjust = 1.1, size = 6, family = "plex") +
-  geom_text(label = "2020", aes(y = 80, x = 2), hjust = -0.1, size = 6, family = "plex") +
-  geom_vline(xintercept = 1, linetype = "dashed", size = .5, alpha = .5) +
-  geom_vline(xintercept = 2, linetype = "dashed", size = .5, alpha = .5) + 
-  scale_x_continuous(limits = c(.5, 2.5)) +
-  scale_y_continuous(limits = c(-70, 80)) +
-  labs(x = "", y = "",
-       title = "Burgernomics from 2010 to 2020",
-       subtitle = "How much currencies were under-or over-valued\nrelative to the US dollar, %, from 2010 to 2020.\n",
-       caption = "Made by @luisfreii | Data: The Economist") +
+```{r, fig.height=8, fig.width=12}
+plot2 <- ggplot(dogs_long) +
+  geom_bump(aes(year, rank, color = Breed), size = 2, smooth = 6) +
+  scale_y_reverse() +
+  scale_color_scico_d(palette = "hawaii", guide = FALSE) +
+  scale_x_continuous(breaks = c(2013:2019), expand = expansion(add = c(1, 0.4))) +
+  geom_text(
+    data = dogranks, aes(y = r2013, x = 2013, label = Breed),
+    hjust = "right", nudge_x = -0.15, size = 5.4, color = "white", family = "Arial"
+  )  +
+  geom_text(
+    data = dogranks, aes(y = r2013, x = 2008, label = r2013),
+    size = 5, color = "#a0c4ff", family = "Arial", fontface = "bold", 
+  ) + 
+  geom_text(
+    data = dogranks, aes(y = r2019, x = 2019, label = r2019),
+    nudge_x = 0.2, size = 5, color = "#a0c4ff", family = "Arial", fontface = "bold", nudge_y = 0.03
+  )  +
+   labs(
+    x = "", y = "",
+    title = "American Kennel Club most popular breeds",
+    caption = "source: AKC registration statistics  https://www.akc.org/expert-advice/dog-breeds/2020-popular-breeds-2019/\nby @LuisDVerde (www.liomys.mx)"
+  ) +
   theme(
-    aspect.ratio = 1,
-    text = element_text(family = "plex"),
-    axis.text.x = element_blank(),
-    plot.title = element_text(size = 22),
-    plot.subtitle = element_text(size = 11),
-    plot.margin = margin(1,2,1,2, unit = "in")
-  )
+    text = element_text(family = "Arial"),
+    axis.text.x = element_text(size = 14, color = "grey55", face = "bold"),
+    axis.text.y = element_blank(), 
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(), 
+    plot.caption = element_text(size = 8),
+    plot.title = element_text(size = 25, hjust = .5, color = "grey70"),
+    plot.background = element_rect(fill = "#252a32"),
+    panel.background = element_rect(fill = "#252a32")
+  ) 
   
-plot
-```
 
+plot2
+```
 
 ```r
-ggsave(
-  plot = plot,
-  filename = "7.png",
-  dpi = 600,
-  height = 12,
-  width = 8
-  
-)
+ggsave(here::here("output", "9-2.png"), plot = plot2, width = 12, height = 8, type="cairo", dpi = 300)
 ```
 
-
-![](/uploads/8.png)
+![](/uploads/9-2.png)
