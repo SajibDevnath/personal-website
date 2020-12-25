@@ -1,5 +1,5 @@
 +++
-date = 2020-12-25T06:00:00Z
+date = 2020-12-25T05:00:00Z
 description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
 image = "/uploads/9-2.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
