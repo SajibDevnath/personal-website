@@ -1,139 +1,117 @@
 +++
-date = 2020-12-25T06:00:00Z
-description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
-draft = true
-image = "/uploads/9-2.png"
+date = 2020-12-25T17:58:00Z
+description = "How old were astronauts on their most recent mission?"
+image = "/uploads/10.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#10 100-ggplots Astronauts"
 
 +++
-### Tutorial:
+Library:
 
 ```r
-df <- tibble(country = c("India", "India", "India", "Sweden", "Sweden", "Sweden", "Germany", "Germany", "Germany", "Finland", "Finland", "Finland"),
-             year = c(2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013),
-             value = c(492, 246, 246, 369, 123, 492, 246, 369, 123, 123, 492, 369))
-
-knitr::kable(head(df))
+pacman::p_load(tidyverse, ggtext, extrafont)
 ```
+
+Loading Data:
 
 ```r
-df <- df %>% 
-  group_by(year) %>% 
-  mutate(rank = rank(value, ties.method = "random")) %>% 
-  ungroup()
+astronauts <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-07-14/astronauts.csv')
 ```
 
-```{r, fig.width=8, fig.height=4}
-ggplot(df, aes(year, rank, color = country)) +
-  geom_bump(size = 2, smooth = 8) +
-  geom_point(size = 3) +
-  geom_text(
-    data = df %>% filter(year == min(year)),
-    aes(x = year - .1, label = country),
-    size = 5,
-    hjust = 1
-  ) + 
-  geom_text(
-    data = df %>% filter(year == max(year)),
-    aes(x = year + .1, label = country),
-    size = 5,
-    hjust = 0
-  ) +
-  scale_x_continuous(breaks = 2011:2013, limits = c(2010.6, 2013.4)) +
-  scale_color_manual(values = wes_palette(n = 4, name = "GrandBudapest1")) +
-  ggthemes::theme_solid() +
-  theme(
-    legend.position = "none"
-  ) -> plox
-```
+Data Wrangling:
 
 ```r
-ggsave(here::here("output", "9-1.png"), plot = plox, width = 8, height = 4, type="cairo")
+astro <- astronauts %>% 
+   mutate(age_selected = year_of_selection - year_of_birth,
+         age_mission = year_of_mission - year_of_birth)
 ```
-![](/uploads/9-1.png)
 
-### 2: Dog breed popularity bump chart
+Finding means:
 
 ```r
-dogranks <-
-  tibble(
-    Breed = c(
-      "Retrievers (Labrador)", "German Shepherd Dogs",
-      "Retrievers (Golden)", "French Bulldogs", "Bulldogs",
-      "Beagles", "Poodles", "Rottweilers", "Yorkshire Terriers",
-      "Pointers (German Shorthaired)", "Pembroke Welsh Corgis"
-    ),
-    r2019 = c(1L, 2L, 3L, 4L, 5L, 7L, 6L, 8L, 12L, 9L, 10L),
-    r2018 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 10L, 9L, 13L),
-    r2017 = c(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 15L),
-    r2016 = c(1L, 2L, 3L, 6L, 4L, 5L, 7L, 8L, 9L, 11L, 18L),
-    r2015 = c(1L, 2L, 3L, 6L, 4L, 5L, 8L, 9L, 7L, 11L, 20L),
-    r2014 = c(1L, 2L, 3L, 9L, 4L, 5L, 7L, 10L, 6L, 12L, 22L),
-    r2013 = c(1L, 2L, 3L, 11L, 5L, 4L, 8L, 9L, 6L, 13L, 24L)
+astro_means <- astro %>% 
+  group_by(name) %>% 
+  filter(mission_number == max(mission_number)) %>% 
+  pivot_longer(cols = c(age_mission, age_selected),
+               names_to = "agetype",
+               values_to = "age") %>% 
+  group_by(agetype) %>% 
+  summarise(mean_age = as.integer(mean(age))) %>% 
+  mutate(
+    agetype = str_remove(agetype, "age_"),
+    agetype = ifelse(agetype == "selected", "selection", "mission")
   )
-
-knitr::kable(dogranks)
+  
+astro_means
 ```
+
+Finding the most recent mission:
 
 ```r
-dogs_long <- dogranks %>%
-  pivot_longer(
-    cols = r2019:r2013,
-    names_to = "year", values_to = "rank"
-  ) %>%
-  mutate(year = readr::parse_number(year))
-
-knitr::kable(dogs_long)
+for_plot <- astro %>%
+  group_by(name) %>%
+  filter(mission_number == max(mission_number)) %>%
+  pivot_longer(cols = c(age_mission, age_selected),
+               names_to = "agetype")
 ```
 
-```r
-library(showtext)
-font_add_google(name = "IBM Plex Sans", family = "Arial")
-showtext_auto()
-```
+Visualization:
 
-```{r, fig.height=8, fig.width=12}
-plot2 <- ggplot(dogs_long) +
-  geom_bump(aes(year, rank, color = Breed), size = 2, smooth = 6) +
-  scale_y_reverse() +
-  scale_color_scico_d(palette = "hawaii", guide = FALSE) +
-  scale_x_continuous(breaks = c(2013:2019), expand = expansion(add = c(1, 0.4))) +
-  geom_text(
-    data = dogranks, aes(y = r2013, x = 2013, label = Breed),
-    hjust = "right", nudge_x = -0.15, size = 5.4, color = "white", family = "Arial"
-  )  +
-  geom_text(
-    data = dogranks, aes(y = r2013, x = 2008, label = r2013),
-    size = 5, color = "#a0c4ff", family = "Arial", fontface = "bold", 
+```{r fig.width=10, fig.height=6}
+for_plot %>% 
+  ggplot(aes(value, fill = agetype)) +
+  geom_histogram(alpha = 0.9, binwidth = 1, show.legend = FALSE, position = position_identity()) + 
+  geom_vline(data = astro_means, aes(xintercept = mean_age), linetype = "dashed", color = "white") +
+  labs(
+    y = "",
+    x = "Age of Astronaut / Years",
+    caption = "Data from the Astronaut Database (https://data.mendeley.com/datasets/86tsnnbv2w/1)",
+    title = '"How old were astronauts on their most recent mission?"',
+    subtitle = "Age of astronauts when they were <b style='color:#1CCAD8'>selected</b>
+         and when they were sent on their <b style='color:#eeff00'>mission</b><br>"
+  ) +
+  scale_fill_manual(values = c("#eeff00", "#1CCAD8")) +
+  scale_color_manual(values = c("#eeff00", "#1CCAD8")) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 67)) +
+  geom_text(data = astro_means, aes(x = mean_age + 1, y = 60, label = paste0("Mean age at\n", agetype, " = ", mean_age), color = agetype, label = ), inherit.aes = FALSE, hjust = 0) +
+  annotate(
+    geom = "text",
+    x = 72,
+    y = 38,
+    label = "John Glenn was 77\non his last mission:\nthe oldest person to\ntravel in space!",
+    colour = "white",
+    vjust = 0.5
   ) + 
-  geom_text(
-    data = dogranks, aes(y = r2019, x = 2019, label = r2019),
-    nudge_x = 0.2, size = 5, color = "#a0c4ff", family = "Arial", fontface = "bold", nudge_y = 0.03
-  )  +
-   labs(
-    x = "", y = "",
-    title = "American Kennel Club most popular breeds",
-    caption = "source: AKC registration statistics  https://www.akc.org/expert-advice/dog-breeds/2020-popular-breeds-2019/\nby @LuisDVerde (www.liomys.mx)"
+  annotate(
+    geom = "curve",
+    xend = 77,
+    yend = 4,
+    x = 75,
+    y = 26,
+    curvature = -.2,
+    arrow = arrow(type = "closed", length = unit(1, "lines")),
+    colour = "white"
   ) +
   theme(
-    text = element_text(family = "Arial"),
-    axis.text.x = element_text(size = 14, color = "grey55", face = "bold"),
-    axis.text.y = element_blank(), 
+    rect = element_rect(fill = "#373F51"),
+    text = element_text(colour = "white", family = "Fira Sans Condensed Light", size = 15),
+    panel.background = element_rect(fill = "#373F51"),
+    axis.text = element_text(colour = "white"),
+    panel.grid = element_blank(),
+    plot.subtitle = element_markdown(family = "Fira Sans Condensed Light", size = 14),
+    legend.position = "none",
+    axis.title.x = element_text(hjust = 1),
+    plot.margin = unit(c(1, 1, 1, 1), "cm"),
     axis.ticks = element_blank(),
-    panel.grid = element_blank(), 
-    plot.caption = element_text(size = 8),
-    plot.title = element_text(size = 25, hjust = .5, color = "grey70"),
-    plot.background = element_rect(fill = "#252a32"),
-    panel.background = element_rect(fill = "#252a32")
-  ) 
-  
-
-plot2
+    panel.grid.major = element_line(colour = "#3e4c6d"),
+    plot.title = element_text(family = "Fira Sans Condensed Light", size = 22),
+    plot.caption = element_text(family = "Fira Sans Condensed Light", size = 12, hjust = 0, colour = "#7383a8")
+  ) -> plotx
 ```
 
 ```r
-ggsave(here::here("output", "9-2.png"), plot = plot2, width = 12, height = 8, type="cairo", dpi = 300)
+ggsave(here::here("output", "10.png"), plot = plotx, width = 10, height = 6, type="cairo", dpi = 300)
 ```
 
-![](/uploads/9-2.png)
+  
+![](/uploads/10.png)
