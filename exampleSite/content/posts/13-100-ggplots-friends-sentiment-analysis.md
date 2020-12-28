@@ -1,7 +1,6 @@
 +++
-date = 2020-12-26T05:57:00Z
+date = 2020-12-28T05:57:00Z
 description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
-draft = true
 image = "/uploads/13.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#13 100-ggplots Friends Sentiment Analysis"
