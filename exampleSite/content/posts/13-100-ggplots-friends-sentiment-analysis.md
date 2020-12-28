@@ -2,7 +2,7 @@
 date = 2020-12-26T05:57:00Z
 description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
 draft = true
-image = "/uploads/12.png"
+image = "/uploads/13.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#13 100-ggplots Friends Sentiment Analysis"
 
@@ -10,112 +10,103 @@ title = "#13 100-ggplots Friends Sentiment Analysis"
 
 Library:
 
-```r
-pacman::p_load(tidyverse, extrafont, magick, ggtext, ggimage)
-
-extrafont::loadfonts(device = 'win')
+```{r}
+pacman::p_load(tidyverse, tidytext, ggwordcloud, extrafont)
+extrafont::loadfonts(device = 'win',  quiet = TRUE)
 ```
 
 
 Data:
 
-```r
-members <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv')
-expeditions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/expeditions.csv')
-peaks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/peaks.csv')
+```{r}
+friends <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-08/friends.csv')
 ```
 
 
-Data Wrangling:
+Data Crunching:
 
-```r
-women_peaks <- members %>% 
-  filter(sex == "F") %>% 
-  inner_join(peaks) %>% 
-  filter(peak_name == "Everest") %>% 
-  mutate(highpoint_metres = ifelse(is.na(highpoint_metres),4500,highpoint_metres))
-```
-
-```r
-women_year <- women_peaks %>% 
-  group_by(highpoint_metres, year) %>% 
-  summarise(n = n())
-```
-
-
-```r
-p1 <- ggplot(women_peaks) +
-  geom_bar(aes(age, fill =..count..), color = NA, show.legend = F) +
-  scico::scale_fill_scico(palette = 'acton', end = 0.7) +
-  scale_x_continuous('', n.breaks = 8)  +
-  annotate(geom = 'text', x = 65, y = 50, color = 'grey30', size = 5, label = 'Age',  family = "Fira Sans Condensed Light") +
-  theme(
-    panel.border = element_blank(),
-    panel.grid = element_blank(),
-    panel.background = element_rect(fill = 'transparent'),
-    plot.background = element_rect(fill = 'transparent', color = 'transparent'),
-    text = element_text( family = "Fira Sans Condensed Light", size = 10)
-    
+```{r}
+six_friends <- friends %>% 
+   filter(
+    speaker %in% c(
+      "Rachel Green",
+      "Ross Geller",
+      "Chandler Bing",
+      "Monica Geller",
+      "Joey Tribbiani",
+      "Phoebe Buffay"
+    )
   )
-
-p1 <- ggplotGrob(p1)
 ```
 
 
-```r
-p2 <- ggplot(women_year, aes(highpoint_metres, x = year, color = n)) + 
-  geom_point(shape = 16, size = 1.5) + 
-  geom_vline(aes(xintercept = 1953), color = 'grey60', linetype = 'longdash') +
-  geom_text(aes(label = 'First successful ascent: 1953', x = 1953, y = 7600), angle = 90, size = 3, nudge_x = -1, color = 'grey50') +
-  scale_y_continuous(
-    position = 'right', 
-    breaks = c(4500, 5000, 6000, 7000, 8000, 8850), 
-    labels = c('No highpoint data', '5000 m', '6000 m', '7000 m', '8000 m', '8850 m - Summit')
-  ) +
-  
-  annotation_custom(grob = p1, xmin = 2010, xmax = 2035, ymin = 8800, ymax = 10200) + 
-  labs(
-    title = "Women on top of the world!",
-    subtitle = "From 1950 to 2019, <span style='color:#8C2981FF'>**1760 women**</span> attempted to climb<br>the highest peak in the world, **Mount Everest**. That is <br>8% of all climbing attempts. <span style='color:#8C2981FF'>**699 women**</span> have made<br>the summit, i.e. 7% of all the recorded summits.",
-    caption = "Data: The Himalayan Database. Created by: @loreabad6", 
-    x = 'Year of attempt', y = 'Highpoint reached') + 
-   scale_x_continuous(n.breaks = 7) +
-  scale_color_viridis_c(
-    'No. of women', option = 'magma', 
-    n.breaks = 5, direction = -1, end = 0.8,
-    guide = guide_colorsteps(
-      barheight = unit(2, 'mm'), 
-      show.limits = T, title.position = 'top'
+Getting unique sentiments:
+
+
+```{r}
+
+six_friends_crunched <- six_friends %>% 
+  unnest_tokens(word, text)  %>% 
+  anti_join(stop_words, by = "word") %>% 
+  group_by(speaker, word) %>% 
+  count() %>% 
+  ungroup() %>% 
+  inner_join(get_sentiments(), by = "word") %>% 
+  group_by(word) %>% 
+  filter(n_distinct(speaker) != 6, n > 3) %>% 
+  group_by(speaker) %>% 
+  mutate(n2 = scales::rescale(n)) %>% 
+  arrange(-n2) %>% 
+  ungroup()
+
+six_friends_crunched
+```
+
+Visualization:
+
+
+
+```{r fig.width= 10, fig.height=6}
+
+set.seed(99)
+
+six_friends_crunched %>% 
+  ggplot(aes(
+    label = word,
+    size = n2,
+    color = sentiment,
+    alpha = n2
   )) +
+  ggwordcloud::geom_text_wordcloud_area(area_corr_power = 1) +
+  facet_wrap(~ speaker) +
+  scale_radius(range = c(3, 15)) +
+  scale_color_manual(values = c("#f14c38ff", "#01b0f1ff")) +
+  labs(
+    title = "The one with sentiment analysis",
+    subtitle = "<span style='color:#01b0f1ff'>Positive</span> and <span style='color:#f14c38ff'>Negative</span>)<br><br>"
+  ) +
+  theme_void() + 
   theme(
-    plot.subtitle = element_markdown(size = 10, family = "Fira Sans Condensed Light"),
-    plot.title = element_text(size = 18, family = "Fira Sans Condensed Light"),
-    plot.caption = element_text(hjust = 0, size = 8, family = "Fira Sans Condensed Light"),
-    
-    ## legend modifying
-    legend.text = element_text(color = 'grey50'),
-    legend.title.align = 0.5,
-    legend.position = c(0.6, 1.05),
-    legend.direction = 'horizontal',
-    legend.background = element_rect(fill = 'transparent'),
     plot.margin = margin(1,1,1,1, unit = "cm"),
-    text = element_text(family = "Fira Sans Condensed Light")
+    plot.background = element_rect(fill = "#393536ff", color = NA),
+    strip.text = element_text(size =  20, color = "white", family = "Gabriel Weiss\' Friends Font"),
+    plot.title = element_text(family = "Gabriel Weiss\' Friends Font", size = 30, color = "#f4c93cff", hjust = .5, vjust = 2),
+    plot.subtitle = ggtext::element_markdown(
+      hjust = .5,
+      color = "white",
+      size = 15
+    )
   )
-
-
-p3 <- ggbackground(
-  p2, here::here("img", "tt_38.png"),
-  image_fun = function(x) magick::image_colorize(x, opacity = 85, color = 'white')
-) 
-  
-p3
 ```
-    
-    
-```r
-ggsave(here::here("output", "12.png"), plot = last_plot(), width = 8, height = 6.5, type="cairo")
-```
-  
-![](/uploads/12.png)
 
-From: [Lorena Abad](https://github.com/loreabad6/TidyTuesday/blob/master/R/2020/week_39.Rmd)
+
+```{r}
+ggsave(here::here("output", "13.png"), plot = last_plot(), width = 10, height = 6, type="cairo")
+
+```
+
+
+
+![](/uploads/13.png)
+
+From: [Jack Davison](https://github.com/jack-davison/TidyTuesday/blob/master/R/2020_09_08_Friends.R)
