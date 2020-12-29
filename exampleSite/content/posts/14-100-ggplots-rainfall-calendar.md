@@ -1,112 +1,110 @@
 +++
-date = 2020-12-28T05:57:00Z
+date = 2020-12-28T19:57:00Z
 description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
-draft = true
-image = "/uploads/13.png"
+image = "/uploads/14.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#14 100-ggplots Rainfall Calendar "
 
 +++
 
-Library:
+Libraries:
 
-```{r}
-pacman::p_load(tidyverse, tidytext, ggwordcloud, extrafont)
+```r
+pacman::p_load(tidyverse, lubridate, ragg, extrafont)
 extrafont::loadfonts(device = 'win',  quiet = TRUE)
 ```
 
 
 Data:
 
-```{r}
-friends <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-08/friends.csv')
+```r
+weather <- data.table::fread(here::here("data", "daily_weather_2020.csv"))
 ```
 
 
-Data Crunching:
+```r
 
-```{r}
-six_friends <- friends %>% 
-   filter(
-    speaker %in% c(
-      "Rachel Green",
-      "Ross Geller",
-      "Chandler Bing",
-      "Monica Geller",
-      "Joey Tribbiani",
-      "Phoebe Buffay"
-    )
+rainfall <- data.frame(
+  date = seq(as.Date("2020-01-01"), as.Date("2020-12-31"), 1),
+  rain = sample.int(30, 366, replace = TRUE)
+) %>% 
+  mutate(rain = ifelse(rain %% 3 == 0 | rain %% 7 == 0, 0, rain))
+```
+
+
+```r
+rainfall_2 <- rainfall %>% 
+  mutate(
+    weekday = wday(date, label = TRUE, week_start = 1),
+    month = month(date, label = TRUE, abbr = TRUE),
+    week = isoweek(date),
+    day = day(date)
   )
 ```
 
 
-Getting unique sentiments:
-
-
-```{r}
-
-six_friends_crunched <- six_friends %>% 
-  unnest_tokens(word, text)  %>% 
-  anti_join(stop_words, by = "word") %>% 
-  group_by(speaker, word) %>% 
-  count() %>% 
-  ungroup() %>% 
-  inner_join(get_sentiments(), by = "word") %>% 
-  group_by(word) %>% 
-  filter(n_distinct(speaker) != 6, n > 3) %>% 
-  group_by(speaker) %>% 
-  mutate(n2 = scales::rescale(n)) %>% 
-  arrange(-n2) %>% 
-  ungroup()
-
-six_friends_crunched
+```r
+rainfall_3 <- rainfall_2 %>% 
+  mutate(
+    week = case_when(month == "December" & week == 1 ~ 53,
+                     month == "January" & week %in% 52:53 ~ 0,
+                     TRUE ~ week),
+    raincat = cut(rain, c(-1, 0, .5, 1:5, 7, 9, 15, 20, 25, 30, 300)),
+    text_color = if_else(raincat %in% c("(15,20]", "(20,25]", "(25,30]", "(30,300]"), "white", "black")
+    
+  )
 ```
 
-Visualization:
+Color Palette:
+
+```r
+pubu <- RColorBrewer::brewer.pal(9, "PuBu")
+col_p <- colorRampPalette(pubu)
+```
 
 
 
-```{r fig.width= 10, fig.height=6}
+```r
 
-set.seed(99)
+rain_plot <- rainfall_3 %>% 
+  ggplot(aes(weekday, -week, fill = raincat)) +
+  geom_tile(color = "white", size = .4) +
+  geom_text(aes(label = day, colour = text_color), size = 2.5) +
+  guides(fill = guide_colorsteps(barwidth = 25, 
+                                 barheight = .4,
+                                 title.position = "top")) +
+  scale_colour_manual(values = c("black", "white"), guide = FALSE) +
+  scale_fill_manual(values = c("white", col_p(13))) +
+  facet_wrap(~ month, nrow = 4, ncol = 3, scales = "free") +
+  labs(title = "How is 2020 being in Santiago?", 
+       subtitle = "Rainfall",
+       caption = "Data: Meteogalicia",
+       fill = "mm") 
 
-six_friends_crunched %>% 
-  ggplot(aes(
-    label = word,
-    size = n2,
-    color = sentiment,
-    alpha = n2
-  )) +
-  ggwordcloud::geom_text_wordcloud_area(area_corr_power = 1) +
-  facet_wrap(~ speaker) +
-  scale_radius(range = c(3, 15)) +
-  scale_color_manual(values = c("#f14c38ff", "#01b0f1ff")) +
-  labs(
-    title = "The one with sentiment analysis",
-    subtitle = "<span style='color:#01b0f1ff'>Positive</span> and <span style='color:#f14c38ff'>Negative</span>)<br><br>"
-  ) +
-  theme_void() + 
+rain_plot
+```
+
+```r
+
+rain_plot +
   theme(
-    plot.margin = margin(1,1,1,1, unit = "cm"),
-    plot.background = element_rect(fill = "#393536ff", color = NA),
-    strip.text = element_text(size =  20, color = "white", family = "Gabriel Weiss\' Friends Font"),
-    plot.title = element_text(family = "Gabriel Weiss\' Friends Font", size = 30, color = "#f4c93cff", hjust = .5, vjust = 2),
-    plot.subtitle = ggtext::element_markdown(
-      hjust = .5,
-      color = "white",
-      size = 15
-    )
+    legend.position = "top",
+    axis.title = element_blank(),
+    axis.ticks = element_blank(),
+    axis.text.y = element_blank(),
+    panel.grid = element_blank(),
+    panel.background = element_blank(),
+    strip.background = element_blank(),
+    text = element_text(family = "Fira Sans Condensed Light"),
+    strip.text = element_text(family = "Fira Sans Condensed Light", face = "bold", size = 15),
+    plot.title = element_text(size = 20, face = "bold", hjust = .5),
+    plot.subtitle = element_text(size = 14, hjust = .5)
   )
-```
-
-
-```{r}
-ggsave(here::here("output", "13.png"), plot = last_plot(), width = 10, height = 6, type="cairo")
 
 ```
 
+![](/uploads/14.png)
 
 
-![](/uploads/13.png)
+From : Dominic Royé](https://dominicroye.github.io/en/2020/a-heatmap-as-calendar/)
 
-From: [Jack Davison](https://github.com/jack-davison/TidyTuesday/blob/master/R/2020_09_08_Friends.R)
