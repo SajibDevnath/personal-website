@@ -6,7 +6,6 @@ tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#15 100-ggplots Ninja Warrior"
 
 +++
-
 Libraries:
 
 ```r
@@ -88,6 +87,7 @@ p2 <- ggbackground(
 
 p2
 ```
+![](/uploads/15.png)
 
 ```r
 ggsave(here::here("output", "15.png"), plot = last_plot(), width = 8, height = 6, type="cairo", dpi = 600)
