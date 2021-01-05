@@ -1,9 +1,9 @@
 +++
-date = 2021-01-05T19:57:00Z
+date = 2021-01-04T19:57:00Z
 description = "Bump charts are good to use to plot ranking over time, or other examples when the path between two nodes have no statistical significance."
 image = "/uploads/16.png"
 tags = ["dataviz", "ggplot2", "100-ggplots"]
-title = "#15 100-ggplots Chiklet Chart with ggchicklet"
+title = "#16 100-ggplots Chiklet Chart with ggchicklet"
 
 +++
 
