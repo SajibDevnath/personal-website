@@ -6,17 +6,6 @@ tags = ["dataviz", "ggplot2", "100-ggplots"]
 title = "#15 100-ggplots Chiklet Chart with ggchicklet"
 
 +++
----
-title: '#16 Chicklet Chart'
-author: "Sajib Devnath"
-date: "12/31/2020"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 
 Libraries:
 
@@ -101,4 +90,3 @@ ggsave(here::here("output", "16.png"), plot = gt, width = 10, height = 5, type="
 
 
 From: [Michael Lee](https://www.mikelee.co/posts/2020-02-08-recreate-fivethirtyeight-chicklet-stacked-bar-chart-in-ggplot2/)
-
