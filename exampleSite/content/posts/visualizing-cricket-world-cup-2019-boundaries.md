@@ -6,7 +6,9 @@ tags = ["dataviz"]
 title = "Visualizing Cricket World Cup 2019 Boundaries"
 
 +++
+
 Importing required libraries:
+
 ```r
 library(tidyr)
 library(dplyr)
@@ -17,7 +19,6 @@ library(ggthemes)
 library(ggdark)
 ```
 
-
 Importing Data:
 
 ```r
@@ -25,13 +26,13 @@ world_cup_boundaries <- read.csv('data/world_cup_boundary.csv')
 ```
 
 Tidy the data for analysis:
+
 ```r
 
 wcb_tidy <- world_cup_boundaries %>% 
   select(Name, Six, Four) %>% 
   gather(Boundary, Total, -Name)
 ```
-
 
 Visualising with ggplot:
 
@@ -44,6 +45,5 @@ ggplot(wcb_tidy, aes(reorder(Name, Total), Total, fill = Boundary)) +
   labs(title = 'World Cup 2019 Boundaries', x = 'Player') +
   scale_fill_excel()
 ```
-
 
 ![](/uploads/unnamed-chunk-3-1.png)
