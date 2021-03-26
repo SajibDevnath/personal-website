@@ -8,6 +8,8 @@ title = "#9 100-ggplots Bump Chart - Dog Breed Popularity"
 +++
 ### Tutorial:
 
+start:
+
 ```r
 df <- tibble(country = c("India", "India", "India", "Sweden", "Sweden", "Sweden", "Germany", "Germany", "Germany", "Finland", "Finland", "Finland"),
              year = c(2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013, 2011, 2012, 2013),
@@ -50,6 +52,7 @@ ggplot(df, aes(year, rank, color = country)) +
 ```r
 ggsave(here::here("output", "9-1.png"), plot = plox, width = 8, height = 4, type="cairo")
 ```
+
 ![](/uploads/9-1.png)
 
 ### 2: Dog breed popularity bump chart
